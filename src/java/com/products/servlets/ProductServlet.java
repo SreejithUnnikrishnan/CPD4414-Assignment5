@@ -7,6 +7,7 @@ package com.products.servlets;
 
 import com.products.database.DatabaseConnection;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,6 +15,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.json.Json;
+import javax.json.stream.JsonGenerator;
+import javax.json.stream.JsonGeneratorFactory;
 import javax.json.stream.JsonParser;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -51,7 +54,7 @@ public class ProductServlet {
     }
 
     private String getResults(String query) {
-        StringBuilder stringBuilder = new StringBuilder();
+        /*StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("[ ");
         int count = 0;
         //String jsonArray = null;      
@@ -70,11 +73,35 @@ public class ProductServlet {
         } catch (SQLException ex) {
             System.out.println("Exception in getting database connection: " + ex.getMessage());
         }
-        return stringBuilder.toString();
+        return stringBuilder.toString();*/
+        StringWriter out = new StringWriter();
+        
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            PreparedStatement pstmt = connection.prepareStatement(query);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {  
+                JsonGeneratorFactory factory = Json.createGeneratorFactory(null);
+                JsonGenerator gen = factory.createGenerator(out);
+                gen.writeStartObject()
+                        .write("productId", rs.getInt("product_id"))
+                        .write("name", rs.getString("name"))
+                        .write("description", rs.getString("description"))
+                        .write("quantity", rs.getInt("quantity"))
+                      .writeEnd();
+                gen.close();
+            }
+            
+        } catch (SQLException ex) {
+            System.out.println("Exception in getting database connection: " + ex.getMessage());
+        }
+        return out.toString();
+
     }
 
     private String getProduct(String query, String... params) {
         StringBuilder stringBuilder = new StringBuilder();
+        StringWriter out = new StringWriter();
         int count = 0;
         //String jsonArray = null;      
         try (Connection connection = DatabaseConnection.getConnection()) {
@@ -83,19 +110,22 @@ public class ProductServlet {
                 pstmt.setString(i, params[i - 1]);
             }
             ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-                if (count > 0) {
-                    stringBuilder.append(",\n");
-                }
-                stringBuilder.append(String.format("{ \"productId\" : %s, \"name\" : \"%s\", \"description\" : \"%s\", \"quantity\" : %s }", rs.getInt("product_id"), rs.getString("name"), rs.getString("description"), rs.getInt("quantity")));
-                count = count + 1;
-                System.out.println(count);
+            while (rs.next()) {  
+                JsonGeneratorFactory factory = Json.createGeneratorFactory(null);
+                JsonGenerator gen = factory.createGenerator(out);
+                gen.writeStartObject()
+                        .write("productId", rs.getInt("product_id"))
+                        .write("name", rs.getString("name"))
+                        .write("description", rs.getString("description"))
+                        .write("quantity", rs.getInt("quantity"))
+                      .writeEnd();
+                gen.close();
             }
-
+            
         } catch (SQLException ex) {
             System.out.println("Exception in getting database connection: " + ex.getMessage());
         }
-        return stringBuilder.toString();
+        return out.toString();
     }
 
     @POST
