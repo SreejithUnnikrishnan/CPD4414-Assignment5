@@ -126,7 +126,7 @@ public class ProductServlet {
         changes = doInsert("INSERT INTO products (name, description, quantity) VALUES (?, ?, ?)", product_name, description, quantity);
         if (changes > 0) {
             int id = getId("select max(product_id) from products");
-            String res = "http://localhost:8080/Assignment3/products?id=" + id;
+            String res = "http://localhost:8080/CPD4414-Assignment5/webresources/products/" + id;
             return res;
         } else {
             String res = "Status(500)";
@@ -181,7 +181,7 @@ public class ProductServlet {
 
         changes = doUpdate("update products set product_id = ?, name = ?, description = ?, quantity = ? where product_id = ?", id, product_name, description, quantity, id);
         if (changes > 0) {
-            String res = "http://localhost:8080/Assignment3/products?id=" + id;
+            String res = "http://localhost:8080/CPD4414-Assignment5/webresources/products/" + id;
             return res;
         } else {
             String res = "Status(500)";
