@@ -23,6 +23,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 
 /**
@@ -97,7 +100,7 @@ public class ProductServlet {
 
     @POST
     @Consumes("application/json")
-    public String doPost(String str) {
+    public Response doPost(@Context UriInfo uri, String str) {
         JsonParser parser = Json.createParser(new StringReader(str));
         Map<String, String> map = new HashMap<>();
         String name = "", value;
@@ -126,11 +129,10 @@ public class ProductServlet {
         changes = doInsert("INSERT INTO products (name, description, quantity) VALUES (?, ?, ?)", product_name, description, quantity);
         if (changes > 0) {
             int id = getId("select max(product_id) from products");
-            String res = "http://localhost:8080/CPD4414-Assignment5/webresources/products/" + id;
-            return res;
+            //String res = "http://localhost:8080/CPD4414-Assignment5/webresources/products/" + id;
+            return Response.ok(uri.getAbsolutePath().toString() + "/" + id).build();
         } else {
-            String res = "Status(500)";
-            return res;
+            return Response.status(500).build();
         }
     }
 
@@ -153,7 +155,7 @@ public class ProductServlet {
     @PUT
     @Path("{id}")
     @Consumes("application/json")
-    public String doPut(@PathParam("id") String id, String str) {
+    public Response doPut(@Context UriInfo uri, @PathParam("id") String id, String str) {
         int changes = 0;
         JsonParser parser = Json.createParser(new StringReader(str));
         Map<String, String> map = new HashMap<>();
@@ -181,11 +183,10 @@ public class ProductServlet {
 
         changes = doUpdate("update products set product_id = ?, name = ?, description = ?, quantity = ? where product_id = ?", id, product_name, description, quantity, id);
         if (changes > 0) {
-            String res = "http://localhost:8080/CPD4414-Assignment5/webresources/products/" + id;
-            return res;
+            //String res = "http://localhost:8080/CPD4414-Assignment5/webresources/products/" + id;
+            return Response.ok(uri.getAbsolutePath().toString() + "/" + id).build();
         } else {
-            String res = "Status(500)";
-            return res;
+            return Response.status(500).build();
         }
 
     }
@@ -210,16 +211,14 @@ public class ProductServlet {
 
     @DELETE
     @Path("{id}")
-    public String doDelete(@PathParam("id") String id) {
+    public Response doDelete(@Context UriInfo uri, @PathParam("id") String id) {
         int changes = 0;
 
         changes = doRemove("delete from products where product_id = ?", id);
         if (changes > 0) {
-            String res = "Status(200)";
-            return res;
+            return Response.ok().build();
         } else {
-            String res = "Status(500)";
-            return res;
+            return Response.status(500).build();
         }
 
     }
