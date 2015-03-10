@@ -118,7 +118,9 @@ public class ProductServlet {
                         .write("name", rs.getString("name"))
                         .write("description", rs.getString("description"))
                         .write("quantity", rs.getInt("quantity"))
+                        
                       .writeEnd();
+                      
                 gen.close();
             }
             
