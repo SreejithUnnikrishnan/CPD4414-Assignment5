@@ -6,16 +6,24 @@
 package com.products.servlets;
 
 import com.products.database.DatabaseConnection;
+import java.awt.Event;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import javax.json.Json;
+import javax.json.stream.JsonParser;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -29,7 +37,7 @@ public class ProductServlet {
 
     @GET
     @Produces("application/")
-    protected String doGet() {
+    public String doGet() {
         String result = getResults("SELECT * FROM products");
         return result;
     }
@@ -89,44 +97,59 @@ public class ProductServlet {
         }
         return stringBuilder.toString();
     }
-
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+    
+    @POST
+    @Consumes("application/json")
+    public String doPost(String str) {
+        JsonParser parser = Json.createParser(new StringReader(str));
+        Map<String, String> map = new HashMap<>();
+        String name = "", value;
+        while (parser.hasNext()) {
+            JsonParser.Event evt = parser.next();
+            switch (evt) {
+                case KEY_NAME:
+                    name = parser.getString();
+                    break;
+                case VALUE_STRING:
+                    value = parser.getString();
+                    map.put(name, value);
+                    break;
+                case VALUE_NUMBER:
+                    value = Integer.toString(parser.getInt());
+                    map.put(name, value);
+                    break;
+            }
+        }
+        
         int changes = 0;
-        Set<String> keySet = request.getParameterMap().keySet();
-        try (PrintWriter out = response.getWriter()) {
-            if (keySet.contains("name") && keySet.contains("description") && keySet.contains("quantity")) {
-                //String id = request.getParameter("id");
-                String name = request.getParameter("name");
-                String description = request.getParameter("description");
-                String quantity = request.getParameter("quantity");
-                changes = doUpdate("INSERT INTO products (name, description, quantity) VALUES (?, ?, ?)", name, description, quantity);
+        
+                String product_name = map.get("name");
+                String description = map.get("description");
+                String quantity = map.get("quantity");
+                changes = doUpdate("INSERT INTO products (name, description, quantity) VALUES (?, ?, ?)", product_name, description, quantity);
                 if (changes > 0) {
                     int id = getId("select max(product_id) from products");
-                    response.sendRedirect("http://localhost:8080/Assignment3/products?id=" + id);
+                    String res = "http://localhost:8080/Assignment3/products?id=" + id;
+                    return res;
                 } else {
-                    response.setStatus(500);
+                    String res = "Status(500)";
+                    return res;
                 }
-            } else {
-                //response.setStatus(500);
-                out.println("Error: Not enough data to input. Please use a URL of the form /products?name=XXX&description=XXX&quantity=xx");
-            }
-        } catch (IOException ex) {
-            System.out.println("Error in writing output: " + ex.getMessage());
-        }
     }
+            
 
-    private int doUpdate(String query, String... params) {
+    
+
+    private int doUpdate(String query, String name, String description , String quantity) {
         int numChanges = 0;
-
         try (Connection connection = DatabaseConnection.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(query);
-            for (int i = 1; i <= params.length; i++) {
-                pstmt.setString(i, params[i - 1]);
-            }
+            pstmt.setString(1, name);
+            pstmt.setString(2, description);
+            pstmt.setString(3, quantity);
             numChanges = pstmt.executeUpdate();
             return numChanges;
         } catch (SQLException ex) {
-
             System.out.println("Sql Exception: " + ex.getMessage());
             return numChanges;
         }
