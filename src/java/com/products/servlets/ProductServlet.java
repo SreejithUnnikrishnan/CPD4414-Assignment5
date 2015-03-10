@@ -42,11 +42,11 @@ public class ProductServlet {
         String result = getResults("SELECT * FROM products");
         return result;
     }
-    
+
     @GET
     @Path("{id}")
     @Produces("application/json")
-    public String doGet(@PathParam("id") String id){
+    public String doGet(@PathParam("id") String id) {
         String result = getProduct("SELECT * FROM products WHERE product_id = ?", id);
         return result;
     }
@@ -98,7 +98,7 @@ public class ProductServlet {
         }
         return stringBuilder.toString();
     }
-    
+
     @POST
     @Consumes("application/json")
     public String doPost(String str) {
@@ -121,27 +121,24 @@ public class ProductServlet {
                     break;
             }
         }
-        
+
         int changes = 0;
-        
-                String product_name = map.get("name");
-                String description = map.get("description");
-                String quantity = map.get("quantity");
-                changes = doInsert("INSERT INTO products (name, description, quantity) VALUES (?, ?, ?)", product_name, description, quantity);
-                if (changes > 0) {
-                    int id = getId("select max(product_id) from products");
-                    String res = "http://localhost:8080/Assignment3/products?id=" + id;
-                    return res;
-                } else {
-                    String res = "Status(500)";
-                    return res;
-                }
+
+        String product_name = map.get("name");
+        String description = map.get("description");
+        String quantity = map.get("quantity");
+        changes = doInsert("INSERT INTO products (name, description, quantity) VALUES (?, ?, ?)", product_name, description, quantity);
+        if (changes > 0) {
+            int id = getId("select max(product_id) from products");
+            String res = "http://localhost:8080/Assignment3/products?id=" + id;
+            return res;
+        } else {
+            String res = "Status(500)";
+            return res;
+        }
     }
-            
 
-    
-
-    private int doInsert(String query, String name, String description , String quantity) {
+    private int doInsert(String query, String name, String description, String quantity) {
         int numChanges = 0;
         try (Connection connection = DatabaseConnection.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(query);
@@ -156,7 +153,7 @@ public class ProductServlet {
         }
 
     }
-    
+
     @PUT
     @Path("{id}")
     @Consumes("application/json")
@@ -181,22 +178,23 @@ public class ProductServlet {
                     break;
             }
         }
-        
-                String product_name = map.get("name");
-                String description = map.get("description");
-                String quantity = map.get("quantity");
-                
-                changes = doUpdate("update products set product_id = ?, name = ?, description = ?, quantity = ? where product_id = ?", id, product_name, description, quantity, id);
-                if (changes > 0) {
-                    String res = "http://localhost:8080/Assignment3/products?id=" + id;
-                    return res;
-                } else {
-                    String res = "Status(500)";
-                    return res;
-                }
-            
+
+        String product_name = map.get("name");
+        String description = map.get("description");
+        String quantity = map.get("quantity");
+
+        changes = doUpdate("update products set product_id = ?, name = ?, description = ?, quantity = ? where product_id = ?", id, product_name, description, quantity, id);
+        if (changes > 0) {
+            String res = "http://localhost:8080/Assignment3/products?id=" + id;
+            return res;
+        } else {
+            String res = "Status(500)";
+            return res;
+        }
+
     }
-    private int doUpdate(String query, String id, String name, String description , String quantity, String pid) {
+
+    private int doUpdate(String query, String id, String name, String description, String quantity, String pid) {
         int numChanges = 0;
         try (Connection connection = DatabaseConnection.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(query);
@@ -213,20 +211,21 @@ public class ProductServlet {
         }
 
     }
+
     @PUT
     @Path("{id}")
     protected String doDelete(@PathParam("id") String id) {
         int changes = 0;
-       
-                changes = doRemove("delete from products where product_id = ?", id);
-                if (changes > 0) {
-                    String res = "Status(200)";
-                    return res;
-                } else {
-                    String res = "Status(500)";
-                    return res;
-                }
-            
+
+        changes = doRemove("delete from products where product_id = ?", id);
+        if (changes > 0) {
+            String res = "Status(200)";
+            return res;
+        } else {
+            String res = "Status(500)";
+            return res;
+        }
+
     }
 
     private int getId(String query) {
@@ -244,7 +243,7 @@ public class ProductServlet {
         }
         return id;
     }
-    
+
     private int doRemove(String query, String id) {
         int numChanges = 0;
         try (Connection connection = DatabaseConnection.getConnection()) {
