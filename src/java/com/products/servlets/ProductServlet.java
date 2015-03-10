@@ -22,6 +22,7 @@ import javax.json.stream.JsonParser;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -157,7 +158,7 @@ public class ProductServlet {
     @PUT
     @Path("{id}")
     @Consumes("application/json")
-    protected String doPut(@PathParam("id") String id, String str) {
+    public String doPut(@PathParam("id") String id, String str) {
         int changes = 0;
         JsonParser parser = Json.createParser(new StringReader(str));
         Map<String, String> map = new HashMap<>();
@@ -212,9 +213,9 @@ public class ProductServlet {
 
     }
 
-    @PUT
+    @DELETE
     @Path("{id}")
-    protected String doDelete(@PathParam("id") String id) {
+    public String doDelete(@PathParam("id") String id) {
         int changes = 0;
 
         changes = doRemove("delete from products where product_id = ?", id);
