@@ -6,9 +6,6 @@
 package com.products.servlets;
 
 import com.products.database.DatabaseConnection;
-import java.awt.Event;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,11 +13,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import javax.json.Json;
 import javax.json.stream.JsonParser;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -30,6 +24,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+
 /**
  *
  * @author c0644881
@@ -38,7 +33,7 @@ import javax.ws.rs.Produces;
 public class ProductServlet {
 
     @GET
-    @Produces("application/")
+    @Produces("application/json")
     public String doGet() {
         String result = getResults("SELECT * FROM products");
         return result;
