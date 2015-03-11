@@ -198,7 +198,7 @@ public class ProductServlet {
         changes = doUpdate("update products set product_id = ?, name = ?, description = ?, quantity = ? where product_id = ?", id, product_name, description, quantity, id);
         if (changes > 0) {
             //String res = "http://localhost:8080/CPD4414-Assignment5/webresources/products/" + id;
-            return Response.ok(uri.getAbsolutePath().toString() + "/" + id).build();
+            return Response.ok(uri.getAbsolutePath().toString()).build();
         } else {
             return Response.status(500).build();
         }
