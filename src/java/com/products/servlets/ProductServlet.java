@@ -8,6 +8,7 @@ package com.products.servlets;
 import com.products.database.DatabaseConnection;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,6 +16,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonWriter;
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonGeneratorFactory;
 import javax.json.stream.JsonParser;
@@ -29,7 +35,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
 
 /**
  *
@@ -54,48 +59,27 @@ public class ProductServlet {
     }
 
     private String getResults(String query) {
-        /*StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("[ ");
-        int count = 0;
-        //String jsonArray = null;      
+
         try (Connection connection = DatabaseConnection.getConnection()) {
+            StringWriter out = new StringWriter();
+            JsonArrayBuilder jarray = Json.createArrayBuilder();
             PreparedStatement pstmt = connection.prepareStatement(query);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
-                if (count > 0) {
-                    stringBuilder.append(",\n");
-                }
-                stringBuilder.append(String.format("{ \"productId\" : %s, \"name\" : \"%s\", \"description\" : \"%s\", \"quantity\" : %s }", rs.getInt("product_id"), rs.getString("name"), rs.getString("description"), rs.getInt("quantity")));
-                count = count + 1;
-                System.out.println(count);
+                JsonObjectBuilder obj = Json.createObjectBuilder()
+                        .add("productId", rs.getInt("product_id"))
+                        .add("name", rs.getString("name"))
+                        .add("description", rs.getString("description"))
+                        .add("quantity", rs.getInt("quantity"));
+                jarray.add(obj);
+
             }
-            stringBuilder.append(" ]");
+            return jarray.build().toString();
+
         } catch (SQLException ex) {
             System.out.println("Exception in getting database connection: " + ex.getMessage());
+            return "Sorry... Something went wrong";
         }
-        return stringBuilder.toString();*/
-        StringWriter out = new StringWriter();
-        
-        try (Connection connection = DatabaseConnection.getConnection()) {
-            PreparedStatement pstmt = connection.prepareStatement(query);
-            ResultSet rs = pstmt.executeQuery();
-            
-            while (rs.next()) {  
-                JsonGeneratorFactory factory = Json.createGeneratorFactory(null);
-                JsonGenerator gen = factory.createGenerator(out);
-                gen.writeStartObject()
-                        .write("productId", rs.getInt("product_id"))
-                        .write("name", rs.getString("name"))
-                        .write("description", rs.getString("description"))
-                        .write("quantity", rs.getInt("quantity"))
-                      .writeEnd();
-                gen.close();
-            }
-            
-        } catch (SQLException ex) {
-            System.out.println("Exception in getting database connection: " + ex.getMessage());
-        }
-        return out.toString();
 
     }
 
@@ -103,14 +87,13 @@ public class ProductServlet {
         StringBuilder stringBuilder = new StringBuilder();
         StringWriter out = new StringWriter();
         int count = 0;
-        //String jsonArray = null;      
         try (Connection connection = DatabaseConnection.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(query);
             for (int i = 1; i <= params.length; i++) {
                 pstmt.setString(i, params[i - 1]);
             }
             ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {  
+            while (rs.next()) {
                 JsonGeneratorFactory factory = Json.createGeneratorFactory(null);
                 JsonGenerator gen = factory.createGenerator(out);
                 gen.writeStartObject()
@@ -118,12 +101,11 @@ public class ProductServlet {
                         .write("name", rs.getString("name"))
                         .write("description", rs.getString("description"))
                         .write("quantity", rs.getInt("quantity"))
-                        
-                      .writeEnd();
-                      
+                        .writeEnd();
+
                 gen.close();
             }
-            
+
         } catch (SQLException ex) {
             System.out.println("Exception in getting database connection: " + ex.getMessage());
         }
